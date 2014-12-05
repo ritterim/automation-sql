@@ -5,6 +5,8 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Win32;
+
 
 namespace RimDev.Automation.Sql
 {
@@ -15,12 +17,29 @@ namespace RimDev.Automation.Sql
             public const string V11 = "v11.0";
             public const string V12 = "v12.0";
 
+            private static readonly Lazy<IReadOnlyList<string>> LazyInstalledVersions
+                = new Lazy<IReadOnlyList<string>>(() =>
+                {
+                    return new[] {
+                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\11.0", "ParentInstance", null)  == null ? null : V11,
+                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\12.0", "ParentInstance", null)  == null ? null : V12,
+                        }
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList()
+                    .AsReadOnly();
+                });
+
             public static readonly IReadOnlyList<string> All
-                = new List<string> {V11, V12}.AsReadOnly();
+                = new List<string> { V11, V12 }.AsReadOnly();
 
             public static bool IsValid(string version)
             {
-                return All.Any(v => v.Equals(version, StringComparison.CurrentCultureIgnoreCase));
+                return InstalledVersions.Any(v => v.Equals(version, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            public static IReadOnlyList<string> InstalledVersions
+            {
+                get { return LazyInstalledVersions.Value; }
             }
         }
 
@@ -41,7 +60,7 @@ namespace RimDev.Automation.Sql
         public LocalDb(string databaseName = null, string version = Versions.V11, string location = null, string databasePrefix = "localdb")
         {
             if (!Versions.IsValid(version))
-                throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb");
+                throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb on your local machine");
 
             Location = location;
             Version = version;
@@ -61,10 +80,10 @@ namespace RimDev.Automation.Sql
 
         private void CreateDatabase()
         {
-            OutputFolder= string.IsNullOrWhiteSpace(Location)
+            OutputFolder = string.IsNullOrWhiteSpace(Location)
                 ? (Location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
                 : Location;
-            
+
             var mdfFilename = string.Format("{0}.mdf", DatabaseName);
             DatabaseMdfPath = Path.Combine(OutputFolder, mdfFilename);
             DatabaseLogPath = Path.Combine(OutputFolder, String.Format("{0}_log.ldf", DatabaseName));

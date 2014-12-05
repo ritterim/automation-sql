@@ -33,5 +33,29 @@ namespace RimDev.Automation.Core
             });
         }
 
+        [Fact]
+        public void LocalDB_Versions_From_Registry()
+        {
+            var result = LocalDb.Versions.InstalledVersions;
+            Assert.Equal(LocalDb.Versions.All, result, StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        [Fact]
+        public void LocalDB_has_localdb_in_name()
+        {
+            using (var db = new LocalDb())
+            {
+                Assert.Contains("localdb", db.DatabaseName);
+            }
+        }
+
+        [Fact]
+        public void LocalDb_defaults_to_V11()
+        {
+            using (var db = new LocalDb())
+            {
+                Assert.Equal(LocalDb.Versions.V11, db.Version);
+            }
+        }
     }
 }

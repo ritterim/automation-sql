@@ -24,7 +24,7 @@ if not exist %LOCALAPPDATA%\NuGet @md %LOCALAPPDATA%\NuGet
 
 :CopyNuGet
 if exist .nuget\nuget.exe goto :Build
-@md .nuget
+if not exist .nuget @md .nuget
 @copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :Build

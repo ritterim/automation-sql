@@ -1,19 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace RimDev.Automation.Sql
 {
     public class LocalDb : IDisposable
     {
-        public static string DatabaseDirectory = "Data";
-
         public static class Versions
         {
             public const string V11 = "v11.0";
             public const string V12 = "v12.0";
+
+            public static readonly IReadOnlyList<string> All
+                = new List<string> {V11, V12}.AsReadOnly();
+
+            public static bool IsValid(string version)
+            {
+                return All.Any(v => v.Equals(version, StringComparison.CurrentCultureIgnoreCase));
+            }
         }
 
         public string ConnectionString { get; private set; }
@@ -26,8 +34,15 @@ namespace RimDev.Automation.Sql
 
         public string DatabaseLogPath { get; private set; }
 
+        public string Version { get; protected set; }
+
+        public string Location { get; protected set; }
+
         public LocalDb(string databaseName = null, string version = Versions.V11, string location = null, string databasePrefix = "localdb")
         {
+            if (!Versions.IsValid(version))
+                throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb");
+
             Location = location;
             Version = version;
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
@@ -36,10 +51,6 @@ namespace RimDev.Automation.Sql
 
             CreateDatabase();
         }
-
-        public string Version { get; protected set; }
-
-        public string Location { get; protected set; }
 
         public IDbConnection OpenConnection()
         {
@@ -50,11 +61,10 @@ namespace RimDev.Automation.Sql
 
         private void CreateDatabase()
         {
-            var basePath = string.IsNullOrWhiteSpace(Location)
+            OutputFolder= string.IsNullOrWhiteSpace(Location)
                 ? (Location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))
                 : Location;
-
-            OutputFolder = Path.Combine(basePath, DatabaseDirectory);
+            
             var mdfFilename = string.Format("{0}.mdf", DatabaseName);
             DatabaseMdfPath = Path.Combine(OutputFolder, mdfFilename);
             DatabaseLogPath = Path.Combine(OutputFolder, String.Format("{0}_log.ldf", DatabaseName));

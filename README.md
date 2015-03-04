@@ -59,7 +59,7 @@ The LocalDB class is initialized completely via the constructor. There are a *fo
 3. **Location** : The location where the database files will be created (log and mdf). By default it will be in **Assembly.GetExecutingAssembly().Location**.
 4. **Database prefix** : This is used as the prefix when creating the database name, if the database name is not specified. By default this value is *"localdb"*.
 
-Notice each are optional and their are safe rational defaults.
+Notice each are optional and there are safe rational defaults.
 
 ## Gotcha's
 

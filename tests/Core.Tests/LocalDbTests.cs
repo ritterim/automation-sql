@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using RimDev.Automation.Sql;
 using Xunit;
 
@@ -55,6 +56,17 @@ namespace RimDev.Automation.Core
             using (var db = new LocalDb())
             {
                 Assert.Equal(LocalDb.Versions.V11, db.Version);
+            }
+        }
+
+        [Fact]
+        public void LocalDb_set_databaseSuffixGenerator()
+        {
+            var guid = Guid.NewGuid().ToString("N");
+            using (var db = new LocalDb(databaseSuffixGenerator: () => guid ))
+            {
+                Assert.Contains(guid, db.DatabaseName);
+                Debug.WriteLine(db.DatabaseName);
             }
         }
     }

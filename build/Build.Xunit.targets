@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="RunTests" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Xunit" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TestAssembliesInParallel Condition=" '$(TestInParallel)' == '' ">false</TestAssembliesInParallel>
+  </PropertyGroup>
 
-  <!-- This is a separate MSBuild file so that we can survive upgrades of the xunit NuGet package
-        and also still work with NuGet Package Restore. -->
-  <ItemGroup >
-    <XunitMsBuildRunner Include="$(MSBuildThisFileDirectory)..\packages\xunit.*\lib\**\xunit.runner.msbuild.dll" />
+  <ItemGroup>
+    <XunitMsBuildRunner Include="..\packages\xunit.runner.msbuild.2*\**\xunit.runner.msbuild.dll" />
+    <TestAssemblies Include="$(TestAssemblies)" />
   </ItemGroup>
 
-  <UsingTask TaskName="Xunit.Runner.MSBuild.xunit" AssemblyFile="@(XunitMsBuildRunner)" />
+  <UsingTask TaskName="Xunit.Runner.MSBuild.xunit" AssemblyFile="@(XunitMsBuildRunner)"
+             Condition=" '@(XunitMsBuildRunner -> Count())' == '1' " />
 
-  <Target Name="RunTests">
-    <Error Text="'xunit.runner.msbuild.dll' was not found. Run package restore and try again."
-           Condition=" '@(XunitMsBuildRunner -> Count())' == '0' " />
+  <Target Name="Xunit">
+    <Error Text="'xunit.runner.msbuild.dll' was not found in the packages directory." Condition=" '@(XunitMsBuildRunner)' == '' " />
+    <Error Text="Multiple copies of 'xunit.runner.msbuild.dll' were found. Please delete your packages directory from the solution folder and try again." Condition=" '@(XunitMsBuildRunner -> Count())' != '1' " />
 
-    <Error Text="Multiple copies of 'xunit.runner.msbuild.dll' were found. Clean your packages folder and try again."
-           Condition=" '@(XunitMsBuildRunner -> Count())' != '1' " />
-
-    <xunit Assembly="$(TestAssembly)" Condition=" Exists('$(TestAssembly)') " />
+    <xunit Assemblies="%(TestAssemblies.Identity)" ParallelizeAssemblies="$(TestAssembliesInParallel)"
+           WorkingFolder="%(TestAssemblies.RelativeDir)" />
   </Target>
 </Project>

@@ -57,15 +57,18 @@ namespace RimDev.Automation.Sql
 
         public string Location { get; protected set; }
 
-        public LocalDb(string databaseName = null, string version = Versions.V11, string location = null, string databasePrefix = "localdb")
+        public Func<string> DatabaseSuffixGenerator { get; protected set; } 
+
+        public LocalDb(string databaseName = null, string version = Versions.V11, string location = null, string databasePrefix = "localdb", Func<string> databaseSuffixGenerator = null)
         {
             if (!Versions.IsValid(version))
                 throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb on your local machine");
 
             Location = location;
             Version = version;
+            DatabaseSuffixGenerator = databaseSuffixGenerator ?? DateTime.Now.Ticks.ToString;
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
-                ? string.Format("{0}_{1}", databasePrefix, DateTime.Now.Ticks)
+                ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
 
             CreateDatabase();

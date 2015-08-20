@@ -52,7 +52,7 @@ using (var database = new LocalDb())
 
 ## Configuration
 
-The LocalDB class is initialized completely via the constructor. There are a *four* option you may set. All are optional.
+The LocalDB class is initialized completely via the constructor. There are *four* options you may set. All are optional.
 
 1. **Database name** : The name of the database as seen in SQL Server Management studio. If not specified the naming will be **localdb_<DateTime.Not.Ticks>**.
 2. **Version** : There are two versions supported for LocalDB, which are **v11** and **v12**. By default we try to use v11 as it is most likely installed.

@@ -2,6 +2,9 @@
 
 This library is designed to allow the creation of **LocalDb** databases via C#. Mainly used to write integration tests, you get a fully functional SQL database that has full SQL Express capabilities.
 
+![NuGet Version](https://img.shields.io/nuget/v/RimDev.Automation.Sql.svg)
+![NuGet Download Count](https://img.shields.io/nuget/dt/RimDev.Automation.Sql.svg)
+
 ## Prerequisites
 
 To use this library, you will need SQL Express 2012 or SQL Express 2014 versions of LocalDb installed. We recommend you installing both via [Chocolatey](https://chocolatey.org/).

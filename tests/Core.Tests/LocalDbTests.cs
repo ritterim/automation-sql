@@ -69,5 +69,17 @@ namespace RimDev.Automation.Core
                 Debug.WriteLine(db.DatabaseName);
             }
         }
+
+        [Fact]
+        public void LocalDb_allows_configuration_of_connection_timeout()
+        {
+            const int Timeout = 1000;
+
+            using (var db = new LocalDb(connectionTimeout: Timeout))
+            {
+                Console.WriteLine(db.ConnectionString);
+                Assert.Contains(string.Format("Connection Timeout={0};", Timeout), db.ConnectionString);
+            }
+        }
     }
 }

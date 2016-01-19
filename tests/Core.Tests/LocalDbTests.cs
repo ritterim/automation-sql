@@ -81,5 +81,15 @@ namespace RimDev.Automation.Core
                 Assert.Contains(string.Format("Connection Timeout={0};", Timeout), db.ConnectionString);
             }
         }
+
+        [Fact]
+        public void LocalDb_allows_configuration_of_MultipleActiveResultSets()
+        {
+            using (var db = new LocalDb(multipleActiveResultSets: true))
+            {
+                Console.WriteLine(db.ConnectionString);
+                Assert.Contains("MultipleActiveResultSets=true;", db.ConnectionString);
+            }
+        }
     }
 }

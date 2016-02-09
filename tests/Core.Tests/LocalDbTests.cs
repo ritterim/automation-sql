@@ -26,15 +26,6 @@ namespace RimDev.Automation.Core
         }
 
         [Fact]
-        public void LocalDB_Throws_Valid_Exception_When_Not_Supported_Version()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                using (var db = new LocalDb(version: "vBad")) {}
-            });
-        }
-
-        [Fact]
         public void LocalDB_Versions_From_Registry()
         {
             var result = LocalDb.Versions.InstalledVersions;

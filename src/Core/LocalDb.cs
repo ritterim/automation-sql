@@ -32,11 +32,6 @@ namespace RimDev.Automation.Sql
             public static readonly IReadOnlyList<string> All
                 = new List<string> { V11, V12 }.AsReadOnly();
 
-            public static bool IsValid(string version)
-            {
-                return InstalledVersions.Any(v => v.Equals(version, StringComparison.CurrentCultureIgnoreCase));
-            }
-
             public static IReadOnlyList<string> InstalledVersions
             {
                 get { return LazyInstalledVersions.Value; }
@@ -72,9 +67,6 @@ namespace RimDev.Automation.Sql
             int? connectionTimeout = null,
             bool multipleActiveResultSets = false)
         {
-            if (!Versions.IsValid(version))
-                throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb on your local machine");
-
             Location = location;
             Version = version;
             DatabaseSuffixGenerator = databaseSuffixGenerator ?? DateTime.Now.Ticks.ToString;

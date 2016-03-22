@@ -82,7 +82,7 @@ Verify that the command worked by using **SQL Server Management Studio** to conn
 
 ## Contributors
 
-- Khalid Abuhakmeh (@khalidabuhakmeh)
+- Khalid Abuhakmeh (@buhakmeh)
 - Justin Rusbatch (@jrusbatch)
 
 ## Thanks

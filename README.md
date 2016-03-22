@@ -11,6 +11,10 @@ To use this library, you will need SQL Express 2012 or SQL Express 2014 versions
 
 ## Quick Start
 
+Install via:
+
+[`Install-Package RimDev.Automation.Sql`](https://www.nuget.org/packages/RimDev.Automation.Sql/)
+
 The **LocalDb** class will perform the following tasks:
 
 1. Create the database files in the path specified

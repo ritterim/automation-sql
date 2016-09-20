@@ -26,15 +26,6 @@ namespace RimDev.Automation.Core
         }
 
         [Fact]
-        public void LocalDB_Throws_Valid_Exception_When_Not_Supported_Version()
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                using (var db = new LocalDb(version: "vBad")) {}
-            });
-        }
-
-        [Fact]
         public void LocalDB_Versions_From_Registry()
         {
             var result = LocalDb.Versions.InstalledVersions;
@@ -67,6 +58,28 @@ namespace RimDev.Automation.Core
             {
                 Assert.Contains(guid, db.DatabaseName);
                 Debug.WriteLine(db.DatabaseName);
+            }
+        }
+
+        [Fact]
+        public void LocalDb_allows_configuration_of_connection_timeout()
+        {
+            const int Timeout = 1000;
+
+            using (var db = new LocalDb(connectionTimeout: Timeout))
+            {
+                Console.WriteLine(db.ConnectionString);
+                Assert.Contains(string.Format("Connection Timeout={0};", Timeout), db.ConnectionString);
+            }
+        }
+
+        [Fact]
+        public void LocalDb_allows_configuration_of_MultipleActiveResultSets()
+        {
+            using (var db = new LocalDb(multipleActiveResultSets: true))
+            {
+                Console.WriteLine(db.ConnectionString);
+                Assert.Contains("MultipleActiveResultSets=true;", db.ConnectionString);
             }
         }
     }

@@ -2,11 +2,18 @@
 
 This library is designed to allow the creation of **LocalDb** databases via C#. Mainly used to write integration tests, you get a fully functional SQL database that has full SQL Express capabilities.
 
+![NuGet Version](https://img.shields.io/nuget/v/RimDev.Automation.Sql.svg)
+![NuGet Download Count](https://img.shields.io/nuget/dt/RimDev.Automation.Sql.svg)
+
 ## Prerequisites
 
 To use this library, you will need SQL Express 2012 or SQL Express 2014 versions of LocalDb installed. We recommend you installing both via [Chocolatey](https://chocolatey.org/).
 
 ## Quick Start
+
+Install via:
+
+[`Install-Package RimDev.Automation.Sql`](https://www.nuget.org/packages/RimDev.Automation.Sql/)
 
 The **LocalDb** class will perform the following tasks:
 
@@ -52,7 +59,7 @@ using (var database = new LocalDb())
 
 ## Configuration
 
-The LocalDB class is initialized completely via the constructor. There are a *four* option you may set. All are optional.
+The LocalDB class is initialized completely via the constructor. There are *four* options you may set. All are optional.
 
 1. **Database name** : The name of the database as seen in SQL Server Management studio. If not specified the naming will be **localdb_<DateTime.Not.Ticks>**.
 2. **Version** : There are two versions supported for LocalDB, which are **v11** and **v12**. By default we try to use v11 as it is most likely installed.
@@ -79,7 +86,7 @@ Verify that the command worked by using **SQL Server Management Studio** to conn
 
 ## Contributors
 
-- Khalid Abuhakmeh (@khalidabuhakmeh)
+- Khalid Abuhakmeh (@buhakmeh)
 - Justin Rusbatch (@jrusbatch)
 
 ## Thanks

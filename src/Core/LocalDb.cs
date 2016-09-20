@@ -32,11 +32,6 @@ namespace RimDev.Automation.Sql
             public static readonly IReadOnlyList<string> All
                 = new List<string> { V11, V12 }.AsReadOnly();
 
-            public static bool IsValid(string version)
-            {
-                return InstalledVersions.Any(v => v.Equals(version, StringComparison.CurrentCultureIgnoreCase));
-            }
-
             public static IReadOnlyList<string> InstalledVersions
             {
                 get { return LazyInstalledVersions.Value; }
@@ -59,14 +54,24 @@ namespace RimDev.Automation.Sql
 
         public Func<string> DatabaseSuffixGenerator { get; protected set; } 
 
-        public LocalDb(string databaseName = null, string version = Versions.V11, string location = null, string databasePrefix = "localdb", Func<string> databaseSuffixGenerator = null)
-        {
-            if (!Versions.IsValid(version))
-                throw new ArgumentOutOfRangeException("version", Version, "is not a supported version of localdb on your local machine");
+        public int? ConnectionTimeout { get; protected set; }
 
+        public bool MultipleActiveResultsSets { get; protected set; }
+
+        public LocalDb(
+            string databaseName = null,
+            string version = Versions.V11,
+            string location = null,
+            string databasePrefix = "localdb",
+            Func<string> databaseSuffixGenerator = null,
+            int? connectionTimeout = null,
+            bool multipleActiveResultSets = false)
+        {
             Location = location;
             Version = version;
             DatabaseSuffixGenerator = databaseSuffixGenerator ?? DateTime.Now.Ticks.ToString;
+            ConnectionTimeout = connectionTimeout;
+            MultipleActiveResultsSets = multipleActiveResultSets;
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
                 ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
@@ -109,7 +114,12 @@ namespace RimDev.Automation.Sql
             }
 
             // Open newly created, or old database.
-            ConnectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog={1};Integrated Security=True;", Version, DatabaseName);
+            ConnectionString = String.Format(
+                @"Data Source=(LocalDB)\{0};Initial Catalog={1};Integrated Security=True;{2}{3}",
+                Version,
+                DatabaseName,
+                ConnectionTimeout == null ? null : string.Format("Connection Timeout={0};", ConnectionTimeout),
+                MultipleActiveResultsSets == true ? "MultipleActiveResultSets=true;" : null);
         }
 
         private void DetachDatabase()

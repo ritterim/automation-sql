@@ -5,8 +5,8 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Win32;
-
 
 namespace RimDev.Automation.Sql
 {
@@ -166,7 +166,7 @@ namespace RimDev.Automation.Sql
 
         public void Dispose()
         {
-            DetachDatabase();
+            Task.Run(() => DetachDatabase());
         }
     }
 }

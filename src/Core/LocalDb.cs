@@ -103,14 +103,16 @@ namespace RimDev.Automation.Sql
             }
 
             // If the database does not already exist, create it.
-            var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
-            using (var connection = new SqlConnection(connectionString))
+            if (!IsAttached())
             {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                DetachDatabase();
-                cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
-                cmd.ExecuteNonQuery();
+                var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
             // Open newly created, or old database.
@@ -150,23 +152,22 @@ namespace RimDev.Automation.Sql
 
         public static bool IsAttached(string databaseName, string version = Versions.V11)
         {
-            const string sql = "SELECT 1 FROM master.sys.databases WHERE name = @0";
             using (var connection = new SqlConnection(string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", version)))
             {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = sql;
-                cmd.Parameters.Add("@0", SqlDbType.NVarChar);
-                cmd.Parameters["@0"].Value = databaseName;
-                var count = (int)cmd.ExecuteScalar();
-
-                return count == 1;
+                using (var command = new SqlCommand(string.Format("SELECT db_id('{0}')", databaseName), connection))
+                {
+                    connection.Open();
+                    return command.ExecuteScalar() != DBNull.Value;
+                }
             }
         }
 
         public void Dispose()
         {
-            Task.Run(() => DetachDatabase());
+            if (IsAttached())
+            {
+                DetachDatabase();
+            }
         }
     }
 }

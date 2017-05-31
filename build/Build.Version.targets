@@ -11,10 +11,6 @@
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(IsRelease)' != 'true' And '$(BUILD_NUMBER)' != '' ">
-    <PackageVersion>$(PackageVersion)-build-$(BUILD_NUMBER)</PackageVersion>
-  </PropertyGroup>
-
   <Target Name="GenerateAssemblyInfo">
     <ItemGroup>
       <AssemblyAttributes Include="System.Reflection.AssemblyVersion">

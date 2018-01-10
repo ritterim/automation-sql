@@ -5,7 +5,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace RimDev.Automation.Sql
@@ -16,6 +15,7 @@ namespace RimDev.Automation.Sql
         {
             public const string V11 = "v11.0";
             public const string V12 = "v12.0";
+            public const string V13 = "v13.0";
 
             private static readonly Lazy<IReadOnlyList<string>> LazyInstalledVersions
                 = new Lazy<IReadOnlyList<string>>(() =>
@@ -23,6 +23,7 @@ namespace RimDev.Automation.Sql
                     return new[] {
                             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\11.0", "ParentInstance", null)  == null ? null : V11,
                             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\12.0", "ParentInstance", null)  == null ? null : V12,
+                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\13.0", "ParentInstance", null)  == null ? null : V13,
                         }
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .ToList()
@@ -30,7 +31,7 @@ namespace RimDev.Automation.Sql
                 });
 
             public static readonly IReadOnlyList<string> All
-                = new List<string> { V11, V12 }.AsReadOnly();
+                = new List<string> { V11, V12, V13 }.AsReadOnly();
 
             public static IReadOnlyList<string> InstalledVersions
             {

@@ -6,7 +6,7 @@ This library is designed to allow the creation of **LocalDb** databases via C#. 
 
 ## Prerequisites
 
-To use this library, you will need SQL Express 2012 or SQL Express 2014 versions of LocalDb installed. We recommend you installing both via [Chocolatey](https://chocolatey.org/).
+To use this library, you will need SQL Express 2012, SQL Express 2014, or SQL Express 2016 versions of LocalDb installed. We recommend installing these via [Chocolatey](https://chocolatey.org/).
 
 ## Quick Start
 
@@ -60,8 +60,8 @@ using (var database = new LocalDb())
 
 The LocalDB class is initialized completely via the constructor. There are *four* options you may set. All are optional.
 
-1. **Database name** : The name of the database as seen in SQL Server Management studio. If not specified the naming will be **localdb_<DateTime.Not.Ticks>**.
-2. **Version** : There are two versions supported for LocalDB, which are **v11** and **v12**. By default we try to use v11 as it is most likely installed.
+1. **Database name** : The name of the database as seen in SQL Server Management studio. If not specified the naming will be **localdb_<DateTime.Now.Ticks>**.
+2. **Version** : There are three versions supported for LocalDB, which are **v11**, **v12**, and **v13**. By default we try to use v11 as it is most likely installed.
 3. **Location** : The location where the database files will be created (log and mdf). By default it will be in **Assembly.GetExecutingAssembly().Location**.
 4. **Database prefix** : This is used as the prefix when creating the database name, if the database name is not specified. By default this value is *"localdb"*.
 
@@ -73,7 +73,11 @@ Notice each are optional and there are safe rational defaults.
 
 You may have LocalDB installed, but never initialized the instance on your machine. Run this command via command prompt.
 
-LocalDB SQL EXPRESS 2014
+LocalDB SQL Express 2016
+
+> "C:\Program Files\Microsoft SQL Server\130\Tools\Binn\SqlLocalDB.exe" create "v13.0" 13.0 -s
+
+LocalDB SQL Express 2014
 
 > "C:\Program Files\Microsoft SQL Server\120\Tools\Binn\SqlLocalDB.exe" create "v12.0" 12.0 -s
 
@@ -90,4 +94,4 @@ Verify that the command worked by using **SQL Server Management Studio** to conn
 
 ## Thanks
 
-Thanks to [Ritter IM](http://ritterim.com) for supporting OSS.
+Thanks to [Ritter IM](https://ritterim.com) for supporting OSS.

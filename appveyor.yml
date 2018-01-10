@@ -1,8 +1,5 @@
 image: Visual Studio 2015
 
-# services:
-#   - mssql2014
-
 cache:
   - packages -> **\packages.config
 
@@ -13,6 +10,7 @@ install:
 before_build:
   - ps: sqllocaldb c "v11.0" 11.0 -s
   - ps: sqllocaldb c "v12.0" 12.0 -s
+  - ps: sqllocaldb c "v13.0" 13.0 -s
 
 build_script:
   - ./build.cmd /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"

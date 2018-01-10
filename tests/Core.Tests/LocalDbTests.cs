@@ -26,6 +26,15 @@ namespace RimDev.Automation.Core
         }
 
         [Fact]
+        public void Can_CreateLocalDB_With_V13()
+        {
+            using (var db = new LocalDb(version: LocalDb.Versions.V13))
+            {
+                Assert.NotNull(db);
+            }
+        }
+
+        [Fact]
         public void LocalDB_Versions_From_Registry()
         {
             var result = LocalDb.Versions.InstalledVersions;

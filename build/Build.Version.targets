@@ -2,17 +2,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MajorVersion>0</MajorVersion>
-    <MinorVersion>4</MinorVersion>
+    <MinorVersion>5</MinorVersion>
     <PatchVersion>0</PatchVersion>
   </PropertyGroup>
 
   <PropertyGroup>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion)</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IsRelease)' != 'true' And '$(BUILD_NUMBER)' != '' ">
-    <PackageVersion>$(PackageVersion)-build-$(BUILD_NUMBER)</PackageVersion>
   </PropertyGroup>
 
   <Target Name="GenerateAssemblyInfo">

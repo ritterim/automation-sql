@@ -5,7 +5,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace RimDev.Automation.Sql
@@ -16,6 +15,7 @@ namespace RimDev.Automation.Sql
         {
             public const string V11 = "v11.0";
             public const string V12 = "v12.0";
+            public const string V13 = "v13.0";
 
             private static readonly Lazy<IReadOnlyList<string>> LazyInstalledVersions
                 = new Lazy<IReadOnlyList<string>>(() =>
@@ -23,6 +23,7 @@ namespace RimDev.Automation.Sql
                     return new[] {
                             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\11.0", "ParentInstance", null)  == null ? null : V11,
                             Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\12.0", "ParentInstance", null)  == null ? null : V12,
+                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\13.0", "ParentInstance", null)  == null ? null : V13,
                         }
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .ToList()
@@ -30,7 +31,7 @@ namespace RimDev.Automation.Sql
                 });
 
             public static readonly IReadOnlyList<string> All
-                = new List<string> { V11, V12 }.AsReadOnly();
+                = new List<string> { V11, V12, V13 }.AsReadOnly();
 
             public static IReadOnlyList<string> InstalledVersions
             {
@@ -103,14 +104,16 @@ namespace RimDev.Automation.Sql
             }
 
             // If the database does not already exist, create it.
-            var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
-            using (var connection = new SqlConnection(connectionString))
+            if (!IsAttached())
             {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                DetachDatabase();
-                cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
-                cmd.ExecuteNonQuery();
+                var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
+                    cmd.ExecuteNonQuery();
+                }
             }
 
             // Open newly created, or old database.
@@ -150,23 +153,22 @@ namespace RimDev.Automation.Sql
 
         public static bool IsAttached(string databaseName, string version = Versions.V11)
         {
-            const string sql = "SELECT 1 FROM master.sys.databases WHERE name = @0";
             using (var connection = new SqlConnection(string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", version)))
             {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = sql;
-                cmd.Parameters.Add("@0", SqlDbType.NVarChar);
-                cmd.Parameters["@0"].Value = databaseName;
-                var count = (int)cmd.ExecuteScalar();
-
-                return count == 1;
+                using (var command = new SqlCommand(string.Format("SELECT db_id('{0}')", databaseName), connection))
+                {
+                    connection.Open();
+                    return command.ExecuteScalar() != DBNull.Value;
+                }
             }
         }
 
         public void Dispose()
         {
-            Task.Run(() => DetachDatabase());
+            if (IsAttached())
+            {
+                DetachDatabase();
+            }
         }
     }
 }

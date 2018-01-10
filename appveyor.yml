@@ -1,0 +1,28 @@
+image: Visual Studio 2015
+
+cache:
+  - packages -> **\packages.config
+
+install:
+  - ps: md -force .nuget >$null 2>&1
+  - ps: "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile '.nuget/nuget.exe'"
+
+before_build:
+  - ps: sqllocaldb c "v11.0" 11.0 -s
+  - ps: sqllocaldb c "v12.0" 12.0 -s
+  - ps: sqllocaldb c "v13.0" 13.0 -s
+
+build_script:
+  - ./build.cmd /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+test: off
+
+artifacts:
+  - path: ./msbuild.log
+  - path: ./artifacts/*.nupkg
+
+deploy:
+  - provider: Environment
+    name: NuGet
+    on:
+      branch: master

@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
 namespace RimDev.Automation.Sql
@@ -21,9 +22,9 @@ namespace RimDev.Automation.Sql
                 = new Lazy<IReadOnlyList<string>>(() =>
                 {
                     return new[] {
-                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\11.0", "ParentInstance", null)  == null ? null : V11,
-                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\12.0", "ParentInstance", null)  == null ? null : V12,
-                            Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\13.0", "ParentInstance", null)  == null ? null : V13,
+                            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\11.0", "ParentInstance", null)  == null ? null : V11,
+                            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\12.0", "ParentInstance", null)  == null ? null : V12,
+                            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SQL Server Local DB\Installed Versions\13.0", "ParentInstance", null)  == null ? null : V13,
                         }
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .ToList()

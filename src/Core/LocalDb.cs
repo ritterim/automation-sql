@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32;
 
 namespace RimDev.Automation.Sql
@@ -67,7 +69,8 @@ namespace RimDev.Automation.Sql
             string databasePrefix = "localdb",
             Func<string> databaseSuffixGenerator = null,
             int? connectionTimeout = null,
-            bool multipleActiveResultSets = false)
+            bool multipleActiveResultSets = false,
+            bool tryInstallingInstanceIfNotExists = false)
         {
             Location = location;
             Version = version;
@@ -77,6 +80,9 @@ namespace RimDev.Automation.Sql
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
                 ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
+
+            if (tryInstallingInstanceIfNotExists && !InstallLocalDbInstanceIfNotExists())
+                throw new ApplicationException(string.Format("Could not start instance of localDb with version {0}", Version));
 
             CreateDatabase();
         }
@@ -124,6 +130,61 @@ namespace RimDev.Automation.Sql
                 DatabaseName,
                 ConnectionTimeout == null ? null : string.Format("Connection Timeout={0};", ConnectionTimeout),
                 MultipleActiveResultsSets == true ? "MultipleActiveResultSets=true;" : null);
+        }
+
+        private bool InstallLocalDbInstanceIfNotExists()
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                Arguments = "info",
+                FileName = "sqllocaldb.exe",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            var standardOutput = new StringBuilder();
+
+            using (var process = Process.Start(startInfo))
+            {
+                // read chunk-wise while process is running.
+                while (!process.HasExited)
+                {
+                    standardOutput.Append(process.StandardOutput.ReadToEnd());
+                }
+
+                // make sure not to miss out on any remaindings.
+                standardOutput.Append(process.StandardOutput.ReadToEnd());
+            }
+
+            var instances = standardOutput.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (!instances.Any(i => i.Trim().Equals(Version)))
+            {
+                standardOutput = new StringBuilder();
+
+                startInfo.Arguments = string.Format("create \"{0}\" {1} -s", Version, Version.Replace("v", ""));
+
+                using (var process = Process.Start(startInfo))
+                {
+                    // read chunk-wise while process is running.
+                    while (!process.HasExited)
+                    {
+                        standardOutput.Append(process.StandardOutput.ReadToEnd());
+                    }
+
+                    // make sure not to miss out on any remaindings.
+                    standardOutput.Append(process.StandardOutput.ReadToEnd());
+                }
+
+                //Check if output says that instance is started
+                var expectedOutput = string.Format("LocalDB instance \"{0}\" started.", Version);
+                var actualOutput = standardOutput.ToString();
+                if (!actualOutput.Contains(expectedOutput))
+                    return false;
+            }
+
+            return true;
         }
 
         private void DetachDatabase()

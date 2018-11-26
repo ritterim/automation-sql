@@ -69,6 +69,9 @@ namespace RimDev.Automation.Sql
             int? connectionTimeout = null,
             bool multipleActiveResultSets = false)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                throw new PlatformNotSupportedException("LocalDb only works on Windows platform");
+
             Location = location;
             Version = version;
             DatabaseSuffixGenerator = databaseSuffixGenerator ?? DateTime.Now.Ticks.ToString;

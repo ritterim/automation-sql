@@ -8,6 +8,7 @@
     <Copyright>Copyright © 2014 Ritter Insurance Marketing, LLC</Copyright>
     <Company>Ritter Insurance Marketing, LLC</Company>
     <PackageTags>localdb;automation</PackageTags>
+    <PackageProjectUrl>https://github.com/ritterim/automation-sql</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

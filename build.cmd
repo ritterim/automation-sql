@@ -23,7 +23,7 @@ echo.
 echo *** STARTING BUILD ***
 echo.
 
-dotnet build src/core/core.csproj --configuration release
+dotnet build src/core/core.csproj --configuration Release
 if %ERRORLEVEL% neq 0 goto :BuildFail
 
 echo.
@@ -34,7 +34,7 @@ echo.
 echo *** STARTING TESTS ***
 echo.
 
-dotnet test tests/core.tests/core.tests.csproj --configuration release
+dotnet test tests/core.tests/core.tests.csproj --configuration Release
 if %ERRORLEVEL% neq 0 goto :TestFail
 
 echo.
@@ -45,7 +45,7 @@ echo.
 echo *** STARTING PACK ***
 echo.
 
-dotnet pack src/core/core.csproj --configuration release
+dotnet pack src/core/core.csproj --configuration Release --no-build --output ../../artifacts
 if %ERRORLEVEL% neq 0 goto :PackFail
 
 echo.

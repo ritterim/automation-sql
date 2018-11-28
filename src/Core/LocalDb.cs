@@ -142,11 +142,13 @@ namespace RimDev.Automation.Sql
                 Arguments = "info",
                 FileName = "sqllocaldb.exe",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
 
             var standardOutput = new StringBuilder();
+            var standardError = new StringBuilder();
 
             using (var process = Process.Start(startInfo))
             {
@@ -154,17 +156,24 @@ namespace RimDev.Automation.Sql
                 while (!process.HasExited)
                 {
                     standardOutput.Append(process.StandardOutput.ReadToEnd());
+                    standardError.Append(process.StandardError.ReadToEnd());
                 }
 
                 // make sure not to miss out on any remaindings.
                 standardOutput.Append(process.StandardOutput.ReadToEnd());
+                standardError.Append(process.StandardError.ReadToEnd());
             }
+
+            var error = standardError.ToString();
+            if (!string.IsNullOrEmpty(error))
+                throw new ApplicationException(error);
 
             var instances = standardOutput.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
             if (!instances.Any(i => i.Trim().Equals(Version)))
             {
-                standardOutput = new StringBuilder();
+                standardOutput.Clear();
+                standardError.Clear();
 
                 startInfo.Arguments = string.Format("create \"{0}\" {1} -s", Version, Version.Replace("v", ""));
 
@@ -174,11 +183,17 @@ namespace RimDev.Automation.Sql
                     while (!process.HasExited)
                     {
                         standardOutput.Append(process.StandardOutput.ReadToEnd());
+                        standardError.Append(process.StandardError.ReadToEnd());
                     }
 
                     // make sure not to miss out on any remaindings.
                     standardOutput.Append(process.StandardOutput.ReadToEnd());
+                    standardError.Append(process.StandardError.ReadToEnd());
                 }
+
+                error = standardError.ToString();
+                if (!string.IsNullOrEmpty(error))
+                    throw new ApplicationException(error);
 
                 //Check if output says that instance is started
                 var expectedOutput = string.Format("LocalDB instance \"{0}\" started.", Version);

@@ -167,6 +167,7 @@ namespace RimDev.Automation.Sql
                 standardOutput.Append(process.StandardOutput.ReadToEnd());
                 standardError.Append(process.StandardError.ReadToEnd());
             }
+            Console.WriteLine(standardOutput.ToString());
 
             var error = standardError.ToString();
             if (!string.IsNullOrEmpty(error))
@@ -194,6 +195,7 @@ namespace RimDev.Automation.Sql
                     standardOutput.Append(process.StandardOutput.ReadToEnd());
                     standardError.Append(process.StandardError.ReadToEnd());
                 }
+                Console.WriteLine(standardOutput.ToString());
 
                 error = standardError.ToString();
                 if (!string.IsNullOrEmpty(error))

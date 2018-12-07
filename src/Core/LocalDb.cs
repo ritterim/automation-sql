@@ -73,20 +73,20 @@ namespace RimDev.Automation.Sql
             int? connectionTimeout = null,
             bool multipleActiveResultSets = false,
             bool tryInstallingInstanceIfNotExists = false,
-            string instanceName = "v" + Versions.V11)
+            string instanceName = null)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 throw new PlatformNotSupportedException("LocalDb only works on Windows platform");
 
             Location = location;
-            Version = version;
+            Version = version.Replace("v", ""); //Try to stay backwards compatible by removing "v" to get the real version number
             DatabaseSuffixGenerator = databaseSuffixGenerator ?? DateTime.Now.Ticks.ToString;
             ConnectionTimeout = connectionTimeout;
             MultipleActiveResultsSets = multipleActiveResultSets;
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
                 ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
-            InstanceName = instanceName;
+            InstanceName = instanceName ?? string.Format("v{0}", Version);
 
             if (tryInstallingInstanceIfNotExists && !InstallLocalDbInstanceIfNotExists())
                 throw new ApplicationException($"Could not start instance {InstanceName} of localDb with version {Version}");

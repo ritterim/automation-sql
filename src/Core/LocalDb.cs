@@ -86,7 +86,7 @@ namespace RimDev.Automation.Sql
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
                 ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
-            InstanceName = instanceName ?? string.Format("v{0}", Version);
+            InstanceName = instanceName.ToLower() ?? string.Format("v{0}", Version); //sqllocaldb.exe always uses lower case
 
             if (tryInstallingInstanceIfNotExists && !InstallLocalDbInstanceIfNotExists())
                 throw new ApplicationException($"Could not start instance {InstanceName} of localDb with version {Version}");

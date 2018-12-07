@@ -19,7 +19,7 @@ namespace RimDev.Automation.Core
         [Fact]
         public void Can_CreateLocalDB_With_V11_And_InstanceName()
         {
-            using (var db = new LocalDb(version: LocalDb.Versions.V11, instanceName: "Test"))
+            using (var db = new LocalDb(version: LocalDb.Versions.V11, instanceName: "Test", tryInstallingInstanceIfNotExists: true))
             {
                 Assert.NotNull(db);
             }
@@ -37,7 +37,7 @@ namespace RimDev.Automation.Core
         [Fact]
         public void Can_CreateLocalDB_With_V12_And_InstanceName()
         {
-            using (var db = new LocalDb(version: LocalDb.Versions.V12, instanceName: "Test"))
+            using (var db = new LocalDb(version: LocalDb.Versions.V12, instanceName: "Test", tryInstallingInstanceIfNotExists: true))
             {
                 Assert.NotNull(db);
             }
@@ -55,7 +55,7 @@ namespace RimDev.Automation.Core
         [Fact]
         public void Can_CreateLocalDB_With_V13_And_InstanceName()
         {
-            using (var db = new LocalDb(version: LocalDb.Versions.V13, instanceName: "Test"))
+            using (var db = new LocalDb(version: LocalDb.Versions.V13, instanceName: "Test", tryInstallingInstanceIfNotExists: true))
             {
                 Assert.NotNull(db);
             }

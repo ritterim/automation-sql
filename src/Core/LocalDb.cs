@@ -16,9 +16,9 @@ namespace RimDev.Automation.Sql
     {
         public static class Versions
         {
-            public const string V11 = "v11.0";
-            public const string V12 = "v12.0";
-            public const string V13 = "v13.0";
+            public const string V11 = "11.0";
+            public const string V12 = "12.0";
+            public const string V13 = "13.0";
 
             private static readonly Lazy<IReadOnlyList<string>> LazyInstalledVersions
                 = new Lazy<IReadOnlyList<string>>(() =>
@@ -54,6 +54,8 @@ namespace RimDev.Automation.Sql
 
         public string Version { get; protected set; }
 
+        public string InstanceName { get; private set; }
+
         public string Location { get; protected set; }
 
         public Func<string> DatabaseSuffixGenerator { get; protected set; } 
@@ -70,7 +72,8 @@ namespace RimDev.Automation.Sql
             Func<string> databaseSuffixGenerator = null,
             int? connectionTimeout = null,
             bool multipleActiveResultSets = false,
-            bool tryInstallingInstanceIfNotExists = false)
+            bool tryInstallingInstanceIfNotExists = false,
+            string instanceName = "v" + Versions.V11)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 throw new PlatformNotSupportedException("LocalDb only works on Windows platform");
@@ -83,9 +86,10 @@ namespace RimDev.Automation.Sql
             DatabaseName = string.IsNullOrWhiteSpace(databaseName)
                 ? string.Format("{0}_{1}", databasePrefix, DatabaseSuffixGenerator())
                 : databaseName;
+            InstanceName = instanceName;
 
             if (tryInstallingInstanceIfNotExists && !InstallLocalDbInstanceIfNotExists())
-                throw new ApplicationException(string.Format("Could not start instance of localDb with version {0}", Version));
+                throw new ApplicationException($"Could not start instance {InstanceName} of localDb with version {Version}");
 
             CreateDatabase();
         }
@@ -105,7 +109,7 @@ namespace RimDev.Automation.Sql
 
             var mdfFilename = string.Format("{0}.mdf", DatabaseName);
             DatabaseMdfPath = Path.Combine(OutputFolder, mdfFilename);
-            DatabaseLogPath = Path.Combine(OutputFolder, String.Format("{0}_log.ldf", DatabaseName));
+            DatabaseLogPath = Path.Combine(OutputFolder, string.Format("{0}_log.ldf", DatabaseName));
 
             // Create Data Directory If It Doesn't Already Exist.
             if (!Directory.Exists(OutputFolder))
@@ -116,20 +120,20 @@ namespace RimDev.Automation.Sql
             // If the database does not already exist, create it.
             if (!IsAttached())
             {
-                var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
+                var connectionString = string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", InstanceName);
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
                     var cmd = connection.CreateCommand();
-                    cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
+                    cmd.CommandText = string.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
                     cmd.ExecuteNonQuery();
                 }
             }
 
             // Open newly created, or old database.
-            ConnectionString = String.Format(
+            ConnectionString = string.Format(
                 @"Data Source=(LocalDB)\{0};Initial Catalog={1};Integrated Security=True;{2}{3}",
-                Version,
+                InstanceName,
                 DatabaseName,
                 ConnectionTimeout == null ? null : string.Format("Connection Timeout={0};", ConnectionTimeout),
                 MultipleActiveResultsSets == true ? "MultipleActiveResultSets=true;" : null);
@@ -170,12 +174,12 @@ namespace RimDev.Automation.Sql
 
             var instances = standardOutput.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (!instances.Any(i => i.Trim().Equals(Version)))
+            if (!instances.Any(i => i.Trim().Equals(InstanceName)))
             {
                 standardOutput.Clear();
                 standardError.Clear();
 
-                startInfo.Arguments = string.Format("create \"{0}\" {1} -s", Version, Version.Replace("v", ""));
+                startInfo.Arguments = string.Format("create \"{0}\" {1} -s", InstanceName, Version);
 
                 using (var process = Process.Start(startInfo))
                 {
@@ -196,7 +200,7 @@ namespace RimDev.Automation.Sql
                     throw new ApplicationException(error);
 
                 //Check if output says that instance is started
-                var expectedOutput = string.Format("LocalDB instance \"{0}\" started.", Version);
+                var expectedOutput = string.Format("LocalDB instance \"{0}\" started.", InstanceName);
                 var actualOutput = standardOutput.ToString();
                 if (!actualOutput.Contains(expectedOutput))
                     return false;
@@ -209,7 +213,7 @@ namespace RimDev.Automation.Sql
         {
             try
             {
-                var connectionString = String.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", Version);
+                var connectionString = string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", InstanceName);
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -228,12 +232,12 @@ namespace RimDev.Automation.Sql
 
         public bool IsAttached()
         {
-            return IsAttached(DatabaseName, Version);
+            return IsAttached(DatabaseName, InstanceName);
         }
 
-        public static bool IsAttached(string databaseName, string version = Versions.V11)
+        public static bool IsAttached(string databaseName, string instanceName = "v" + Versions.V11)
         {
-            using (var connection = new SqlConnection(string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", version)))
+            using (var connection = new SqlConnection(string.Format(@"Data Source=(LocalDB)\{0};Initial Catalog=master;Integrated Security=True", instanceName)))
             {
                 using (var command = new SqlCommand(string.Format("SELECT db_id('{0}')", databaseName), connection))
                 {
